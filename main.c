@@ -135,6 +135,28 @@ static void crear_symbolic_link (const char *filename) {
     }
 
 }
+static void crear_directorio (const char *dirname, const char *filename) {
+
+    char buffer[BUFFER_SIZE] = { 0 };
+
+    if (!mkdir (dirname, 0777)) {
+        (void) snprintf (buffer, BUFFER_SIZE - 1, "%s/%s", dirname, filename);
+        if (!crear_archivo_nombres (buffer)) {
+            listar_atributos_del_archivo (buffer, true);
+
+            crear_symbolic_link (buffer);
+
+            crear_hard_link (buffer);
+
+            listar_directorio (dirname);
+        }
+    }
+
+    else {
+        (void) printf ("Error %d al crear el directorio %s!\n\n", errno, dirname);
+    }
+
+}
 
 int main (int argc, const char **argv) {
 
