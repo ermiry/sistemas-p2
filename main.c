@@ -160,8 +160,38 @@ static void crear_directorio (const char *dirname, const char *filename) {
 
 int main (int argc, const char **argv) {
 
-	printf ("Hola mundo!\n\n");
+    if (argc > 2) {
+        const char *dirname = argv[1];
+        const char *filename = argv[2];
 
-	return 0;
+        bool delete_dir = false;
+        if (argc > 3) {
+            if (!strcmp (argv[3], "--delete")) {
+                delete_dir = true;
+            }
+        }
+
+        if (!checar_por_directorio_creado (dirname)) {
+            (void) printf ("El directorio %s ya existe\n", dirname);
+
+            if (delete_dir) {
+                (void) printf ("Borrando directorio...\n");
+                borrar_directorio (dirname);
+                (void) printf ("Borrado!\n\n");
+
+                crear_directorio (dirname, filename);
+            }
+        }
+
+        else {
+            crear_directorio (dirname, filename);
+        }
+    }
+
+    else {
+        (void) printf ("Se requiere el nombre del directorio y el nombre del archivo!\n\n");
+    }
+
+    return 0;
 
 }
