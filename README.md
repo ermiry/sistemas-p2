@@ -17,7 +17,5 @@ gcc main.c -o bin/p2
 
 **Run**
 ```
-gcc main.c -o bin/p2
-```
 ./bin/p2 hola nombres.txt --delete
 ```
