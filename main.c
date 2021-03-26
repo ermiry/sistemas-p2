@@ -12,6 +12,9 @@
 
 #define BUFFER_SIZE		1024
 
+static const char *simbolico = { "simbolico" };
+static const char *hard = { "hard" };
+
 static const char *nuestros_nombres = { "Erick Salas Romero\nRicardo Whaibe Martinez\nMariana Peña Hernandez\nMaximiliano Escobar Valencia\nGarciacano Garcia Gabriel\nUriel Castañeda Gomez\n\n" };
 
 static void listar_atributos_del_archivo (const char *filename, bool all) {
@@ -103,7 +106,7 @@ static unsigned int crear_archivo_nombres (const char *filename) {
 
         size_t wrote = fwrite (nuestros_nombres, strlen (nuestros_nombres), 1, nombres);
         if (wrote) {
-            (void) printf ("Se escribireron %lu elementos en %s\n\n!", wrote, filename);
+            (void) printf ("Se escribireron %lu elementos en %s!\n\n", wrote, filename);
 
             retval = 0;
         }
@@ -119,36 +122,46 @@ static unsigned int crear_archivo_nombres (const char *filename) {
 
 }
 
-static void crear_symbolic_link (const char *filename) {
+// crear symbolic link
+static void crear_symbolic_link (
+    const char *dirname,
+    const char *single_filename, const char *filename
+) {    
 
-    // crear symbolic link
-    const char *simbolico = { "simbolico" };
+    char buffer[BUFFER_SIZE] = { 0 };
 
     (void) printf ("Creando link simbolico a %s...\n", filename);
 
-    if (!symlink (filename, simbolico)) {
-        (void) printf ("Link simbolico %s a %s creado!\n", simbolico, filename);
+     (void) snprintf (buffer, BUFFER_SIZE - 1, "%s-%s-%s", simbolico, dirname, single_filename);
+
+    if (!symlink (filename, buffer)) {
+        (void) printf ("Link simbolico %s a %s creado!\n", buffer, filename);
     }
 
     else {
-        (void) printf ("Error %d al crear link simbolico!\n", errno);
+        (void) printf ("Error %d al crear link simbolico %s!\n", errno, buffer);
     }
 
 }
 
-static void crear_hard_link (const char *filename) {
+// crear hard link
+static void crear_hard_link (
+    const char *dirname,
+    const char *single_filename, const char *filename
+) {
 
-	// crear hard link
-	const char *hard = { "hard" };
+    char buffer[BUFFER_SIZE] = { 0 };
 
 	(void) printf ("Creando hard link a %s...\n", filename);
 
-	if (!link (filename, hard)) {
-		(void) printf ("Hard link %s a %s creado!\n", hard, filename);
+    (void) snprintf (buffer, BUFFER_SIZE - 1, "%s-%s-%s", hard, dirname, single_filename);
+
+	if (!link (filename, buffer)) {
+		(void) printf ("Hard link %s a %s creado!\n", buffer, filename);
 	}
 
 	else {
-		(void) printf ("Error %d al crear hard link!\n", errno);
+		(void) printf ("Error %d al crear hard link %s!\n", errno, buffer);
 	}
 
 }
@@ -162,9 +175,9 @@ static void crear_directorio (const char *dirname, const char *filename) {
         if (!crear_archivo_nombres (buffer)) {
             listar_atributos_del_archivo (buffer, true);
 
-            crear_symbolic_link (buffer);
+            crear_symbolic_link (dirname, filename, buffer);
 
-            crear_hard_link (buffer);
+            crear_hard_link (dirname, filename, buffer);
 
             listar_directorio (dirname);
         }
@@ -177,6 +190,8 @@ static void crear_directorio (const char *dirname, const char *filename) {
 }
 
 int main (int argc, const char **argv) {
+
+    char new_dirname[BUFFER_SIZE] = { 0 };
 
     if (argc > 2) {
         const char *dirname = argv[1];
@@ -195,8 +210,18 @@ int main (int argc, const char **argv) {
             if (delete_dir) {
                 (void) printf ("Borrando directorio...\n");
                 borrar_directorio (dirname);
+                (void) printf ("Borrando links...\n");
+                (void) remove (simbolico);
+                (void) remove (hard);
                 (void) printf ("Borrado!\n\n");
 
+                crear_directorio (dirname, filename);
+            }
+
+            else {
+                (void) printf ("\nDame un nuevo nombre para el directorio: ");
+                (void) scanf ("%s", new_dirname);
+                dirname = new_dirname;
                 crear_directorio (dirname, filename);
             }
         }
